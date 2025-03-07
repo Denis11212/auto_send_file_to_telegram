@@ -47,10 +47,10 @@ RESPONSE=$(curl -s -F document="@$FILE_PATH" -F chat_id="$CHAT_ID" https://api.t
 # Проверяем ответ сервера
 if echo "$RESPONSE" | grep -q '"ok":true'; then
 # Удаление файла в случае успешной отправки
-	echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Файл "$FILE_PATH" успешно отправлен" >> auto_send_file_to_telegram.log
+	echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Файл "$FILE_PATH" успешно отправлен" >> /root/auto_send_file_to_telegram.log
 	rm "$FILE_PATH"
 else
-	echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Отправка файла "$FILE_PATH" провалилась $RESPONSE" >> auto_send_file_to_telegram.log
+	echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Отправка файла "$FILE_PATH" провалилась $RESPONSE" >> /root/auto_send_file_to_telegram.log
 	mv "$FILE_PATH" "$FAILED_FILES_DIR/"
 fi
 }
@@ -79,5 +79,5 @@ while read FILENAME; do
 	send_file "$FILENAME"
 	retry_failed_files "$FAILED_FILES_DIR"
 done
-echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Работа скрипта "$0" была неожиданно завершена!" >> auto_send_file_to_telegram.log
+echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Работа скрипта "$0" была неожиданно завершена!" >> /root/auto_send_file_to_telegram.log
 exit 1
