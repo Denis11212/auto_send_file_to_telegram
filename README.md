@@ -3,5 +3,8 @@
 ```Shell
 uci set auto_send_file_to_telegram.bot_auth.bot_token=bot_token
 uci set auto_send_file_to_telegram.bot_auth.chat_id=chat_id
-аллада```
+uci set auto_send_file_to_telegram.sub_folder.sub_folder_name_path=/tmp/auto_send_file_to_telegram
+uci set auto_send_file_to_telegram.sub_folder.sub_folder_name=new
+```
+
 Так как скрипт хранит данные в стандартных для OpenWrt конфигурационном файле `/etc/config/auto_send_file_to_telegram`
