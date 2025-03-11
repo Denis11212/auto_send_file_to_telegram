@@ -3,7 +3,7 @@
 # Классно было бы вообще в LuCI интегрировать хотя бы такой функционал для начала, но я не умею этого делать. Так что если кто-то умеет, то вот вам идея.
 
 config_file="/usr/bin/auto_send_file_to_telegram.sh" # Исполняемый файл скрипта auto_send_file_to_telegram
-script_file="/etc/config/telegramopenwrt" # Файл хранения данных auto_send_file_to_telegram
+script_file="/etc/config/auto_send_file_to_telegram" # Файл хранения данных auto_send_file_to_telegram
 script_URL='https://github.com/Denis11212/auto_send_file_to_telegram/raw/refs/heads/main/auto_send_file_to_telegram.sh' # адрес загрузки скрипта
 programs="curl grep sed inotifywait find jq" # перечисляю через пробел приложения, которые должны быть установлены.
 
@@ -231,7 +231,7 @@ write_data() {
 # Можно почитать про использование UCI на https://openwrt.org/ru/docs/guide-user/base-system/uci
 uci set auto_send_file_to_telegram.bot_auth.bot_token=$BOT_TOKEN
 uci set auto_send_file_to_telegram.bot_auth.chat_id=$CHAT_ID
-uci commit telegramopenwrt
+uci commit auto_send_file_to_telegram
 reboot # Перезапустить устройство
 # /etc/init.d/auto_send_file_to_telegram start # не вижу смысла запускать, лучше выполнить reboot перезагрузку
 }
@@ -281,5 +281,5 @@ exit 0
 #uci set auto_send_file_to_telegram.sub_folder.sub_folder_name_path=/tmp/auto_send_file_to_telegram
 #uci set auto_send_file_to_telegram.sub_folder.sub_folder_name=new
 # Не забыть нужно применить измнения, если не сделать, то они будут актульны лишь до перезагрузки.
-# uci commit telegramopenwrt
+# uci commit auto_send_file_to_telegram
 # https://openwrt.org/ru/docs/guide-user/base-system/uci тут можно почитать про использование UCI
