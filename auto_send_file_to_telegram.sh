@@ -1,7 +1,5 @@
 #!/bin/sh
 
-programs="curl grep inotifywait find" # перечисляю через пробел приложения, которые должны быть установлены.
-
 # Ваш токен бота, полученный от @BotFather, хранится в файле /etc/config/auto_send_file_to_telegram
 # Посмотреть переписку с ботом можно по адресу  https://api.telegram.org/bot$BOT_TOKEN/getUpdates
 BOT_TOKEN=$(uci get auto_send_file_to_telegram.bot_auth.bot_token)
@@ -9,9 +7,10 @@ BOT_TOKEN=$(uci get auto_send_file_to_telegram.bot_auth.bot_token)
 CHAT_ID=$(uci get auto_send_file_to_telegram.bot_auth.chat_id)
 
 
-# Скрипт создаёт две папки failed_files и $SUB_FOLDER_NAME, в каталоге $SUB_FOLDER_NAME_PATH, если этих папок ранее небыло создано в этом каталоге. Кстати, в этом каталоге ещё и будет хранится файл auto_send_file_to_telegram.log
+# Скрипт создаёт две папки failed_files и $SUB_FOLDER_NAME, в каталоге $SUB_FOLDER_NAME_PATH, если этих папок ранее небыло создано в этом каталоге.
 SUB_FOLDER_NAME_PATH=$(uci get auto_send_file_to_telegram.sub_folder.sub_folder_name_path) # Путь к папке, в которой скрипт будет хранить failed_files и $SUB_FOLDER_NAME
 SUB_FOLDER_NAME=$(uci get auto_send_file_to_telegram.sub_folder.sub_folder_name) # папка, внутри которой хранятся файлы, которые нужно будет отправить
+# Из-за того, что данные берутся лишь при загрузке - редактирование скрипта не позволит боту оперативно реагировать на измнение настроек, соотвественно, для примениения изменений нужно перезапустить скрипт. Как выход, есть вариант каждый раз при проходе цикла запрашивать данные через uci, уж не знаю как скажется на производительности. https://openwrt.org/ru/docs/guide-user/base-system/uci тут можно почитать про использование UCI.
 
 # Папка, которую будем мониторить
 FULL_WATCH_PATH=$(echo "/$SUB_FOLDER_NAME_PATH/$SUB_FOLDER_NAME" | sed 's/\/\{1,\}/\//g')
@@ -20,15 +19,7 @@ mkdir -p $FULL_WATCH_PATH
 FAILED_FILES_DIR=$(echo "/$SUB_FOLDER_NAME_PATH/failed_files" | sed 's/\/\{1,\}/\//g')
 mkdir -p $FAILED_FILES_DIR
 
-# Для своей работы скрипт использует следущие приложения, перечисленные в переменной $programs. Так же скрипту нужно соединения с интернетом, обязательно проверьте его.
-checkPrograms() {
-for program in $programs; do
-    if ! command -v "$program" > /dev/null; then
-        echo "Программа $program не установлена. Пожалуйста, установите её. Например, для установки можно использовать следующую команду: $ opkg install $program"
-        exit 1
-    fi
-done
-}
+# auto_send_file_to_telegram.log по хорошему, нужно будет поменять на запись в системный журнал. Ну, или в настройках сделать где писать и хранить этот файл. А может быть и вообще отказаться от таких записей. 
 
 # проверка на root права у пользователя. Круто будет, если проще получится.
 isRoot() {
@@ -47,10 +38,10 @@ RESPONSE=$(curl -s -F document="@$FILE_PATH" -F chat_id="$CHAT_ID" https://api.t
 # Проверяем ответ сервера
 if echo "$RESPONSE" | grep -q '"ok":true'; then
 # Удаление файла в случае успешной отправки
-	echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Файл "$FILE_PATH" успешно отправлен" >> /root/auto_send_file_to_telegram.log
+	#echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Файл "$FILE_PATH" успешно отправлен" >> /root/auto_send_file_to_telegram.log
 	rm "$FILE_PATH"
 else
-	echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Отправка файла "$FILE_PATH" провалилась $RESPONSE" >> /root/auto_send_file_to_telegram.log
+	#echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Отправка файла "$FILE_PATH" провалилась $RESPONSE" >> /root/auto_send_file_to_telegram.log
 	mv "$FILE_PATH" "$FAILED_FILES_DIR/"
 fi
 }
@@ -79,5 +70,9 @@ while read FILENAME; do
 	send_file "$FILENAME"
 	retry_failed_files "$FAILED_FILES_DIR"
 done
-echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Работа скрипта "$0" была неожиданно завершена!" >> /root/auto_send_file_to_telegram.log
+
+# Если скрипт вышел из inotifywait, то так не должно быть.
+#echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Работа скрипта "$0" была неожиданно завершена!" >> /root/auto_send_file_to_telegram.log
 exit 1
+
+# Для активации записи событий нужно раскомментировать строки, содержащие >> /root/auto_send_file_to_telegram.log. Кстати, название и место хранения файла можно выбрать любое.
