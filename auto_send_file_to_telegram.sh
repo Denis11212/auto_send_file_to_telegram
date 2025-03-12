@@ -19,8 +19,6 @@ mkdir -p $FULL_WATCH_PATH
 FAILED_FILES_DIR=$(echo "/$SUB_FOLDER_NAME_PATH/failed_files" | sed 's/\/\{1,\}/\//g')
 mkdir -p $FAILED_FILES_DIR
 
-# auto_send_file_to_telegram.log по хорошему, нужно будет поменять на запись в системный журнал. Ну, или в настройках сделать где писать и хранить этот файл. А может быть и вообще отказаться от таких записей. 
-
 # проверка на root права у пользователя. Круто будет, если проще получится.
 isRoot() {
   if [ $(id -u) -ne 0 ]; then
@@ -39,9 +37,13 @@ RESPONSE=$(curl -s -F document="@$FILE_PATH" -F chat_id="$CHAT_ID" https://api.t
 if echo "$RESPONSE" | grep -q '"ok":true'; then
 # Удаление файла в случае успешной отправки
 	#echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Файл "$FILE_PATH" успешно отправлен" >> /root/auto_send_file_to_telegram.log
+	#logger -p local0.info -t auto_send_file_to_telegram "Файл "$FILE_PATH" успешно отправлен"
+	#Выше представлено два разные варианта отправики log сообщений. В первом - запись в файл, а во втором - обозначение в общем логе системы.
 	rm "$FILE_PATH"
 else
 	#echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Отправка файла "$FILE_PATH" провалилась $RESPONSE" >> /root/auto_send_file_to_telegram.log
+	#logger -p local0.info -t auto_send_file_to_telegram "Отправка файла "$FILE_PATH" провалилась $RESPONSE"
+	#Выше представлено два разные варианта отправики log сообщений. В первом - запись в файл, а во втором - обозначение в общем логе системы.
 	mv "$FILE_PATH" "$FAILED_FILES_DIR/"
 fi
 }
@@ -73,6 +75,9 @@ done
 
 # Если скрипт вышел из inotifywait, то так не должно быть.
 #echo "[$(date +'%Y-%m-%dT%H:%M:%SZ')] Работа скрипта "$0" была неожиданно завершена!" >> /root/auto_send_file_to_telegram.log
+#logger -p local0.info -t auto_send_file_to_telegram "Работа скрипта "$0" была неожиданно завершена!"
+#Выше представлено два разные варианта отправики log сообщений. В первом - запись в файл, а во втором - обозначение в общем логе системы.
 exit 1
 
 # Для активации записи событий нужно раскомментировать строки, содержащие >> /root/auto_send_file_to_telegram.log. Кстати, название и место хранения файла можно выбрать любое.
+# Если запись велась в системный лог, то для просмотра сообщений нужно набрать logread -e auto_send_file_to_telegram
