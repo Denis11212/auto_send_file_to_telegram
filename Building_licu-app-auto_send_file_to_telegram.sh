@@ -84,7 +84,7 @@ EOF
 	cat << EOF > "$auto_send_file_to_telegramSource"/CONTROL/control # Далее нужно внимательно проверить, верна ли информация, указанная ниже в файле control. Обязательно должны присутсвовать разделы Package, Version, Architecture, Maintainer, Description, хотя насчёт Description и Maintainer я не уверен, впрочем, может и ещё меньше можно оставить полей. Но лишняя информация вряд-ли повредит, особенно если она верно указана. Скрипт ipkg-build умеет заполнять Installed-Size автоматически. Так же можно использовать ещё в control файле ipk пункт Depends:, в котором можно указазать от каких других пакетов зависит данный пакет для своей работы. SourceDateEpoch: как я понял, это в формате Unix time время крайнего измнения исходного кода.
 Package: auto_send_file_to_telegram
 Version: 1.0
-Depends: curl grep sed inotifywait jq
+Depends: curl, grep, sed, inotifywait, jq
 Source: feeds/packages/auto_send_file_to_telegram
 SourceName: auto_send_file_to_telegram
 License: none
